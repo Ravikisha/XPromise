@@ -40,9 +40,9 @@ function reject(promise, reason) {
 // invoke all the handlers stored in the promise
 function finale(promise) {
   const length = promise.queue.length;
-    for (let i = 0; i < length; i++) {
-        handle(promise, promise.queue[i]);
-    }
+  for (let i = 0; i < length; i++) {
+    handle(promise, promise.queue[i]);
+  }
 }
 
 // creates the fulfill and reject functions that are passed to the executor
@@ -71,6 +71,11 @@ function doResolve(promise, executor) {
 // - call the handler if the promise is not PENDING
 
 function handle(promise, handler) {
+  // take the state of the innermost promise
+  while (promise.value instanceof RPromise) {
+    promise = promise.value;
+  }
+
   if (promise.state === PENDING) {
     promise.queue.push(handler);
   } else {
@@ -85,7 +90,7 @@ function handleResolved(promise, handler) {
   try {
     const value = cb(promise.value);
     fulfill(handler.promise, value);
-  }catch (e) {
+  } catch (e) {
     reject(handler.promise, e);
   }
 }

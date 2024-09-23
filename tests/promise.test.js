@@ -172,55 +172,84 @@ describe("Async executors", () => {
   });
 });
 
+describe("Chaining promises", () => {
+  it(".then should return a new promise", () => {
+    expect(function () {
+      const qOnFulfilled = jest.fn();
+      const rOnFulfilled = jest.fn();
+      const p = new RPromise((fulfill) => fulfill());
+      const q = p.then(qOnFulfilled);
+      const r = q.then(rOnFulfilled);
+    }).not.toThrow();
+  });
 
-describe('Chaining promises', () => {
-    it('.then should return a new promise', () => {
-      expect(function () {
-        const qOnFulfilled = jest.fn()
-        const rOnFulfilled = jest.fn()
-        const p = new RPromise(fulfill => fulfill())
-        const q = p.then(qOnFulfilled)
-        const r = q.then(rOnFulfilled)
-      }).not.toThrow()
-    })
-  
-    it('if .then\'s onFulfilled is called without errors it should transition to FULFILLED', () => {
+  it("if .then's onFulfilled is called without errors it should transition to FULFILLED", () => {
+    const value = ":)";
+    const f1 = jest.fn();
+    new RPromise((fulfill) => fulfill()).then(() => value).then(f1);
+    expect(f1.mock.calls.length).toBe(1);
+    expect(f1.mock.calls[0][0]).toBe(value);
+  });
+
+  it("if .then's onRejected is called without errors it should transition to FULFILLED", () => {
+    const value = ":)";
+    const f1 = jest.fn();
+    new RPromise((fulfill, reject) => reject())
+      .then(null, () => value)
+      .then(f1);
+    expect(f1.mock.calls.length).toBe(1);
+    expect(f1.mock.calls[0][0]).toBe(value);
+  });
+
+  it("if .then's onFulfilled is called and has an error it should transition to REJECTED", () => {
+    const reason = new Error("I failed :(");
+    const f1 = jest.fn();
+    new RPromise((fulfill) => fulfill())
+      .then(() => {
+        throw reason;
+      })
+      .then(null, f1);
+    expect(f1.mock.calls.length).toBe(1);
+    expect(f1.mock.calls[0][0]).toBe(reason);
+  });
+
+  it("if .then's onRejected is called and has an error it should transition to REJECTED", () => {
+    const reason = new Error("I failed :(");
+    const f1 = jest.fn();
+    new RPromise((fulfill, reject) => reject())
+      .then(null, () => {
+        throw reason;
+      })
+      .then(null, f1);
+    expect(f1.mock.calls.length).toBe(1);
+    expect(f1.mock.calls[0][0]).toBe(reason);
+  });
+});
+
+
+describe('Async handlers', () => {
+    it('if a handler returns a promise, the previous promise should ' +
+      'adopt the state of the returned promise', () => {
       const value = ':)'
       const f1 = jest.fn()
       new RPromise(fulfill => fulfill())
-        .then(() => value)
+        .then(() => new RPromise(resolve => resolve(value)))
         .then(f1)
       expect(f1.mock.calls.length).toBe(1)
       expect(f1.mock.calls[0][0]).toBe(value)
     })
   
-    it('if .then\'s onRejected is called without errors it should transition to FULFILLED', () => {
+    it('if a handler returns a promise resolved in the future, ' +
+        'the previous promise should adopt its value', done => {
       const value = ':)'
       const f1 = jest.fn()
-      new RPromise((fulfill, reject) => reject())
-        .then(null, () => value)
+      new RPromise(fulfill => setTimeout(fulfill, 0))
+        .then(() => new RPromise(resolve => setTimeout(resolve, 0, value)))
         .then(f1)
-      expect(f1.mock.calls.length).toBe(1)
-      expect(f1.mock.calls[0][0]).toBe(value)
-    })
-  
-    it('if .then\'s onFulfilled is called and has an error it should transition to REJECTED', () => {
-      const reason = new Error('I failed :(')
-      const f1 = jest.fn()
-      new RPromise(fulfill => fulfill())
-        .then(() => { throw reason })
-        .then(null, f1)
-      expect(f1.mock.calls.length).toBe(1)
-      expect(f1.mock.calls[0][0]).toBe(reason)
-    })
-  
-    it('if .then\'s onRejected is called and has an error it should transition to REJECTED', () => {
-      const reason = new Error('I failed :(')
-      const f1 = jest.fn()
-      new RPromise((fulfill, reject) => reject())
-        .then(null, () => { throw reason })
-        .then(null, f1)
-      expect(f1.mock.calls.length).toBe(1)
-      expect(f1.mock.calls[0][0]).toBe(reason)
+      setTimeout(() => {
+        expect(f1.mock.calls.length).toBe(1)
+        expect(f1.mock.calls[0][0]).toBe(value)
+        done()
+      }, 10)
     })
   })
