@@ -10,6 +10,11 @@ class RPromise {
         // call the executor function immediately
         doResolve(this, executor);
     }
+
+    // `then` method handles the fulfillment and rejection of a promise
+    then(onFulfilled, onRejected) {
+        handleResolved(this, onFulfilled, onRejected);
+    }
 }
 
 // fulfill with `reason`
@@ -35,6 +40,12 @@ function doResolve(promise, executor) {
     }
 
     executor(wrapFulfill, wrapReject);
+}
+
+// handle the fulfillment and rejection of a promise
+function handleResolved(promise, onFulfilled, onRejected) {
+    const cb = promise.state === FULFILLED ? onFulfilled : onRejected;
+    cb(promise.value);
 }
 
 module.exports = RPromise;
