@@ -7,26 +7,38 @@ class RPromise {
   constructor(executor) {
     // Initial state is pending
     this.state = PENDING;
+    // this handler queue will be used to store the onFulfilled and onRejected functions
+    this.queue = [];
     // call the executor function immediately
     doResolve(this, executor);
   }
 
   // `then` method handles the fulfillment and rejection of a promise
   then(onFulfilled, onRejected) {
-    handleResolved(this, onFulfilled, onRejected);
+    handle(this, { onFulfilled, onRejected });
   }
 }
 
 // fulfill with `reason`
-function fulfill(promise, reason) {
+function fulfill(promise, value) {
   promise.state = FULFILLED;
-  promise.value = reason;
+  promise.value = value;
+  finale(promise);
 }
 
 // reject with `reason`
 function reject(promise, reason) {
   promise.state = REJECTED;
   promise.value = reason;
+  finale(promise);
+}
+
+// invoke all the handlers stored in the promise
+function finale(promise) {
+  const length = promise.queue.length;
+    for (let i = 0; i < length; i++) {
+        handle(promise, promise.queue[i]);
+    }
 }
 
 // creates the fulfill and reject functions that are passed to the executor
@@ -43,13 +55,29 @@ function doResolve(promise, executor) {
     called = true;
     reject(promise, reason);
   }
+  try {
+    executor(wrapFulfill, wrapReject);
+  } catch (e) {
+    wrapReject(e);
+  }
+}
 
-  executor(wrapFulfill, wrapReject);
+// checks the state of the promise to either:
+// - queue it for later use if the promise is PENDING
+// - call the handler if the promise is not PENDING
+
+function handle(promise, handler) {
+  if (promise.state === PENDING) {
+    promise.queue.push(handler);
+  } else {
+    handleResolved(promise, handler);
+  }
 }
 
 // handle the fulfillment and rejection of a promise
-function handleResolved(promise, onFulfilled, onRejected) {
-  const cb = promise.state === FULFILLED ? onFulfilled : onRejected;
+function handleResolved(promise, handler) {
+  const cb =
+    promise.state === FULFILLED ? handler.onFulfilled : handler.onRejected;
   cb(promise.value);
 }
 
