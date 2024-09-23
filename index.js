@@ -1,4 +1,4 @@
-const RPromise = require("./src/promise.js");
+const XPromise = require("./src/promise.js");
 
 const r1 = () => console.log("r1");
 const p = new RPromise((fulfill) => fulfill());

@@ -3,7 +3,7 @@ const PENDING = "PENDING";
 const FULFILLED = "FULFILLED";
 const REJECTED = "REJECTED";
 
-class RPromise {
+class XPromise {
   constructor(executor) {
     // Initial state is pending
     this.state = PENDING;
@@ -20,6 +20,11 @@ class RPromise {
     // store the promise as well
     handle(this, { promise, onFulfilled, onRejected });
     return promise;
+  }
+
+  // `catch` method is a shorthand for `then(null, onRejected)`
+  catch(onRejected) {
+    return this.then(null, onRejected);
   }
 }
 
@@ -134,4 +139,4 @@ function doResolve(promise, executor) {
 }
 
 
-module.exports = RPromise;
+module.exports = XPromise;
