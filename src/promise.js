@@ -15,7 +15,11 @@ class RPromise {
 
   // `then` method handles the fulfillment and rejection of a promise
   then(onFulfilled, onRejected) {
-    handle(this, { onFulfilled, onRejected });
+    // empty executor function
+    const promise = new RPromise(() => {});
+    // store the promise as well
+    handle(this, { promise, onFulfilled, onRejected });
+    return promise;
   }
 }
 
@@ -78,7 +82,12 @@ function handle(promise, handler) {
 function handleResolved(promise, handler) {
   const cb =
     promise.state === FULFILLED ? handler.onFulfilled : handler.onRejected;
-  cb(promise.value);
+  try {
+    const value = cb(promise.value);
+    fulfill(handler.promise, value);
+  }catch (e) {
+    reject(handler.promise, e);
+  }
 }
 
 module.exports = RPromise;
