@@ -1,6 +1,18 @@
-# XPromise
+# XPromise - A Custom Promise Implementation
+
+> XPromise means "**Extended Promise**"
+<p float="left">
+<img src="https://img.shields.io/github/license/ravikisha/xpromise" alt="License">
+<img src="https://img.shields.io/github/stars/ravikisha/xpromise" alt="Stars">
+<img src="https://img.shields.io/github/forks/ravikisha/xpromise" alt="Forks">
+<img src="https://img.shields.io/github/issues/ravikisha/xpromise" alt="Issues">
+<img src="https://shields.io/badge/JavaScript-F7DF1E?logo=JavaScript&logoColor=000&style=flat-square" alt="Language">
+
+</p>
 
 XPromise is a JavaScript library that replicates the functionality of native JavaScript Promises, providing an intuitive way to handle asynchronous operations. XPromise supports promise chaining, error handling, and much more to enhance asynchronous workflows.
+
+> **Note**: This project is for educational purposes only and should not be used in production environments. It is intended to demonstrate how promises work under the hood.
 
 ## Features
 
