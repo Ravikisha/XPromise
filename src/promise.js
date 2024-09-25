@@ -26,6 +26,11 @@ class XPromise {
   catch(onRejected) {
     return this.then(null, onRejected);
   }
+
+  // `finally` method is a shorthand for `then(onFulfilled, onRejected)`
+  finally(onFinally) {
+    return this.then(onFinally, onFinally);
+  }
 }
 
 // checks the state of the promise to either:
